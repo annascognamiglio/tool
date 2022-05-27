@@ -1,33 +1,25 @@
 package application;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 /**
  *
@@ -152,33 +144,16 @@ public class RoadDrawer extends JPanel{
         }
     }
     
-    public JComboBox getMaxSpeed(){
-        List<String> speed = new ArrayList<>();
-        for (int i=10;i<201;i+=5){
-            speed.add(Integer.toString(i));
+    public int getSpeedFromUser (String message){
+        String speed = JOptionPane.showInputDialog(message);
+        try {
+            Integer.parseInt(speed);
+            return Integer.parseInt(speed);        
         }
-        JPanel speedPanel = new JPanel(new GridBagLayout());
-        JComboBox comboSpeed = new JComboBox(speed.toArray());
-        comboSpeed.setSelectedIndex(8);
-        comboSpeed.setEditable(true);
-        JOptionPane.showMessageDialog(null, comboSpeed, "Please select max speed",JOptionPane.QUESTION_MESSAGE);
-        speedPanel.add(comboSpeed);
-        return comboSpeed;
-    }
-    
-    public JComboBox getSpeedFromCombo(){
-        List<String> speed = new ArrayList<>();
-        speed.add("1");
-        for (int i=5;i<201;i+=5){
-            speed.add(Integer.toString(i));
+        catch (NumberFormatException e){
+            JOptionPane.showMessageDialog(this,"Speed invalid","Speed invalid",JOptionPane.ERROR_MESSAGE);
         }
-        JPanel speedPanel = new JPanel(new GridBagLayout());
-        JComboBox comboSpeed = new JComboBox(speed.toArray());
-        comboSpeed.setSelectedIndex(10);
-        comboSpeed.setEditable(true);
-        JOptionPane.showMessageDialog(null, comboSpeed, "Please select speed",JOptionPane.QUESTION_MESSAGE);
-        speedPanel.add(comboSpeed);
-        return comboSpeed;
+        return getSpeedFromUser(message);
     }
     
     public boolean checkPoints(String speed){ // validità del test
@@ -210,7 +185,6 @@ public class RoadDrawer extends JPanel{
     }
     
     public void writePointsOnFile(String x, String y, String speed) throws Exception{
-        System.out.println("Scrivo i punti sul file.\n");
         FileWriter myWriter = new FileWriter("chosenPoint.txt");
         myWriter.write(x);
         myWriter.write("\n");

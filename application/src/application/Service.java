@@ -1,12 +1,10 @@
 package application;
 
 import com.mathworks.engine.MatlabEngine;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
@@ -14,10 +12,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -45,9 +40,8 @@ public class Service {
                     
                     if (simulator.equals("BeamNG")){ 
                         try{
-                            String maxSpeed = (String) panel.getRoadDrawer().getMaxSpeed().getSelectedItem();
-                            panel.getRoadDrawer().setSpeed(Integer.parseInt(maxSpeed));
-                            boolean valid = panel.getRoadDrawer().checkPoints(maxSpeed); // CONTROLLO CHE IL TEST SIA VALIDO
+                            int maxSpeed = panel.getRoadDrawer().getSpeedFromUser("Please insert max speed:");
+                            boolean valid = panel.getRoadDrawer().checkPoints(Integer.toString(maxSpeed)); // CONTROLLO CHE IL TEST SIA VALIDO
                             if (!valid){
                                 return;
                             }
@@ -69,8 +63,9 @@ public class Service {
                     
                     else if (simulator.equals("MATLAB")){
                         try{
-                            String speed = (String) panel.getRoadDrawer().getSpeedFromCombo().getSelectedItem();
-                            panel.getRoadDrawer().setSpeed(Integer.parseInt(speed));
+                            // String speed = (String) panel.getRoadDrawer().getSpeedFromCombo().getSelectedItem();
+                            // panel.getRoadDrawer().setSpeed(Integer.parseInt(speed));
+                            int speed = panel.getRoadDrawer().getSpeedFromUser("Please insert speed:");
                             System.out.println("MATLAB");
                             boolean valid = panel.getRoadDrawer().checkPoints(null); // CONTROLLO CHE IL TEST SIA VALIDO
                             if (!valid){
@@ -82,8 +77,7 @@ public class Service {
                             StringWriter writerE = new StringWriter();
                             stringPointX = panel.getRoadDrawer().getStringXinterpolated();
                             stringPointY = panel.getRoadDrawer().getStringYinterpolated();
-                            System.out.println(stringPointX+"\n"+stringPointY);
-                            panel.getRoadDrawer().writePointsOnFile(stringPointX, stringPointY, speed); // scrivo i punti *scelti* (NON interpolati - da aggiungere) sul file chosenPoint.txt
+                            panel.getRoadDrawer().writePointsOnFile(stringPointX, stringPointY, Integer.toString(speed)); // scrivo i punti *scelti* (NON interpolati - da aggiungere) sul file chosenPoint.txt
                             Future<Void> fLoad = eng.evalAsync("open_system('LKATestBenchExample')");
                             while (!fLoad.isDone()){
                                 System.out.println("Opening Simulink model...");
