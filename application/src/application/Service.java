@@ -88,6 +88,7 @@ public class Service {
                     if (simulator.equals("BeamNG")){ 
                         try{
                             int maxSpeed = panel.getRoadDrawer().getSpeedFromUser("Please insert max speed:");
+                            if (maxSpeed==0) return;
                             boolean valid = panel.getRoadDrawer().checkPoints(Integer.toString(maxSpeed)); // CONTROLLO CHE IL TEST SIA VALIDO
                             if (!valid){
                                 return;
@@ -129,6 +130,7 @@ public class Service {
                             // String speed = (String) panel.getRoadDrawer().getSpeedFromCombo().getSelectedItem();
                             // panel.getRoadDrawer().setSpeed(Integer.parseInt(speed));
                             int speed = panel.getRoadDrawer().getSpeedFromUser("Please insert speed:");
+                            if (speed==0) return;
                             System.out.println("MATLAB");
                             boolean valid = panel.getRoadDrawer().checkPoints(null); // CONTROLLO CHE IL TEST SIA VALIDO
                             if (!valid){

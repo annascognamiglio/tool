@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagLayout;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -146,8 +144,10 @@ public class RoadDrawer extends JPanel{
     
     public int getSpeedFromUser (String message){
         String speed = JOptionPane.showInputDialog(message);
+        if (speed==null) return 0;
         try {
             Integer.parseInt(speed);
+            if (Integer.parseInt(speed)<0) return getSpeedFromUser(message);
             return Integer.parseInt(speed);        
         }
         catch (NumberFormatException e){
