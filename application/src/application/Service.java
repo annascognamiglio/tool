@@ -141,6 +141,8 @@ public class Service {
                             stringPointX = panel.getRoadDrawer().getStringXinterpolated();
                             stringPointY = panel.getRoadDrawer().getStringYinterpolated();
                             panel.getRoadDrawer().writePointsOnFile(stringPointX, stringPointY, Integer.toString(speed)); // scrivo i punti *scelti* (NON interpolati - da aggiungere) sul file chosenPoint.txt
+                            eng.eval("runScenario");
+                            /*Future<Void> fPlotInputs = eng.evalAsync("plotLKAInputs(scenario,driverPath)");
                             Future<Void> fLoad = eng.evalAsync("open_system('LKATestBenchExample')");
                             while (!fLoad.isDone()){
                                 System.out.println("Opening Simulink model...");
@@ -152,7 +154,9 @@ public class Service {
                                 System.out.println("Running Simulation...");
                                 Thread.sleep(10000);
                             }
-                            System.out.println(writerO.toString());
+                            System.out.println(writerO.toString());*/
+                            
+                            
                            
                             
                         } catch (Exception e){
