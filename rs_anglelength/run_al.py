@@ -124,6 +124,16 @@ class AngleLengthGenerator:
                 done = True
         return arr
 
+    def get_max_oob_percentage(self, execution_data):
+        max_oob_percentage = 0
+        for record in execution_data:
+            logging.info(f"Processing record with oob: {record.oob_percentage}")
+            if record.oob_percentage > max_oob_percentage:
+                logging.debug(f"New oob max: {record.oob_percentage}")
+                max_oob_percentage = record.oob_percentage
+        # logging.debug(f"Returning oob max: {max_oob_percentage}")
+        return max_oob_percentage
+
     def start(self):
 
         #test_executor = MockExecutor(result_folder="results", time_budget=1e10, map_size=500, road_visualizer=RoadTestVisualizer(map_size=500))
@@ -141,7 +151,7 @@ class AngleLengthGenerator:
         Y = np.asarray(str(lines[1]).split(','), dtype=float)
         speed = int(np.asarray(str(lines[2])))
         test_executor = BeamngExecutor(generation_budget=10000, execution_budget=10000, time_budget=10000,
-                                       result_folder="results", map_size=500, beamng_home="C:\\Users\\kikki\\BeamNG",
+                                       result_folder="C:\\Users\\kikki\\PycharmProjects\\progetto\\results", map_size=500, beamng_home="C:\\Users\\kikki\\BeamNG",
                                        beamng_user="C:\\Users\\kikki\\BeamNG_user",
                                        road_visualizer=RoadTestVisualizer(map_size=500), max_speed_in_kmh=speed)
         final = np.column_stack((X, Y))
@@ -159,11 +169,18 @@ class AngleLengthGenerator:
             if is_valid:
                 print("Test seems valid")
                 test_outcome, description, execution_data = test_executor.execute_test(the_test)
+                print("oob")
+                for record in execution_data:
+                    print(record.oob_percentage);
+                print("end")
                 if test_outcome == "ERROR":
                     print("Test seemed valid, but test outcome was ERROR. Negative reward.")
                 elif test_outcome == "PASS":
                     print("Test is valid and passed.")
                 elif test_outcome == "FAIL":
                     print("Test is valid and failed.")
+                for record in execution_data:
+                    print(record.oob_percentage);
             else:
                 print(f"Test is invalid: {validation_message}")
+
