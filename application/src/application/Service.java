@@ -1,6 +1,7 @@
 package application;
 
 import com.mathworks.engine.MatlabEngine;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
@@ -12,7 +13,17 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -22,13 +33,49 @@ import org.json.simple.parser.JSONParser;
  * @author Anna
  */
 public class Service {
+    
+    public static void createChart(List<Double> oob){
+        XYSeries series = new XYSeries("oob");
+        DefaultXYDataset ds = new DefaultXYDataset();
+        double[] time = new double[oob.size()];
+        double[][] data = new double[oob.size()][oob.size()];
+        for (int i = 0; i<oob.size();i++){
+            series.add(i,oob.get(i));
+        }
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        dataset.addSeries(series);
+        JFreeChart chart = ChartFactory.createScatterPlot(
+        "Simulation result",
+        "Time (sec)",
+        "Out of Bound (%)",
+        dataset,
+        PlotOrientation.VERTICAL,
+        false,
+        false,
+        false
+        );
+        /*ds.addSeries("oob", data);
+        System.out.println("LENGTH: "+data.length);
+        ds.addSeries("oob", data);
+        JFreeChart chart = ChartFactory.createXYLineChart("Test Chart", "x", "y", ds, PlotOrientation.VERTICAL, true, true, false);*/
+        JFrame frame = new JFrame("Charts");
+        frame.setSize(600, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        ChartPanel cp = new ChartPanel(chart);
+        chart.getPlot().setBackgroundPaint(Color.WHITE);
+        frame.getContentPane().add(cp);
+    }
+    
     public static ActionListener actionOkButton(ContainerRoadDrawer panel) {
         return  new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                boolean flag = false;
                 String stringPointX = panel.getRoadDrawer().getStringPointX();
                 String stringPointY = panel.getRoadDrawer().getStringPointY();
                 String simulator = (String) panel.getComboSimulator().getSelectedItem();
+                List<Double> oob = new ArrayList<>();
                 List<Point2D> points = panel.getRoadDrawer().getPoints();
                 if (points.size()<=1){
                     JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Insufficient number of points","Error",JOptionPane.ERROR_MESSAGE);
@@ -47,11 +94,27 @@ public class Service {
                             }
                             ProcessBuilder builder = new ProcessBuilder("python", "C:\\Users\\kikki\\PycharmProjects\\progetto\\competition.py","--module-name", "rs_anglelength.run_al", "--class-name", "AngleLengthGenerator", "--time-budget", "10000", "--executor", "beamng", "--map-size", "500");//, "--visualize-tests");
                             Process process = builder.start();
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                             BufferedReader readerE = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                             String lines = null;
+                            while((lines=reader.readLine())!=null){
+                                System.out.println("Output: "+lines);
+                                if(lines.equals("end")){
+                                    flag = false;
+                                }
+                                if (flag){
+                                    oob.add(Double.parseDouble(lines));
+                                }
+                                if (lines.equals("oob")){
+                                    flag = true;
+                                }
+                            }
                             while ((lines=readerE.readLine())!=null){
                                 System.out.println("Error : "+lines);
                             }
+                            
+                            createChart(oob);
+                            
                             
                         } catch(Exception e){
                             System.out.println("Errore:");
