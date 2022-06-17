@@ -9,13 +9,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -32,7 +36,6 @@ public class RoadDrawer extends JPanel{
     private String stringPointY = "";
     
     public RoadDrawer(){
-        setBackground(new Color(23,99,8));
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e){
@@ -73,7 +76,7 @@ public class RoadDrawer extends JPanel{
     }
     
     public void setPoints(List<Point2D> p){
-        this.points = p;
+        this.points = new ArrayList<Point2D>(p);
         repaint();
     }
     
@@ -197,24 +200,34 @@ public class RoadDrawer extends JPanel{
     @Override
     public void paintComponent (Graphics g){
         super.paintComponent(g);
+        BufferedImage background = null;
+        try {
+            background = ImageIO.read(new File("C:\\Users\\kikki\\Documents\\Tesi\\prato.jpeg"));
+        } catch (IOException ex) {
+            Logger.getLogger(RoadDrawer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
         g2.setColor(Color.gray);
+        System.out.println("PUNTI\n");
         for (Point2D p : points){
+                System.out.println(p.getX()+", "+p.getY());
                 g2.fillOval((int)p.getX(),(int)p.getY(),5,5);
             }
         if (points.size()>3){
             try {
                 interpolatePoints();
+                System.out.println("INTERPOLATED SIZE "+interpolated.size());
                 for (int i=1; i<interpolated.size(); i++){
-                Line2D line = new Line2D.Double(interpolated.get(i-1),interpolated.get(i));
-                g2.setColor(Color.gray);
-                g2.setStroke(new BasicStroke(10));
-                g2.draw(line);
-                g2.setStroke(new BasicStroke(2));
-                g2.setColor(Color.yellow);
-                g2.draw(line);
+                    Line2D line = new Line2D.Double(interpolated.get(i-1),interpolated.get(i));
+                    g2.setColor(Color.gray);
+                    g2.setStroke(new BasicStroke(10));
+                    g2.draw(line);
+                    g2.setStroke(new BasicStroke(2));
+                    g2.setColor(Color.yellow);
+                    g2.draw(line);
                 }
             } catch (Exception ex) {
                 Logger.getLogger(RoadDrawer.class.getName()).log(Level.SEVERE, null, ex);

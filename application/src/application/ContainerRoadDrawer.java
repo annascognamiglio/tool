@@ -5,13 +5,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 /**
@@ -26,7 +28,11 @@ public class ContainerRoadDrawer extends JFrame{
     private void initComponents() {
         roadDrawer = new RoadDrawer();
         comboSimulator = new JComboBox<>();
+        speedField = new JTextField();
         okButton = new JButton();
+        addButton = new JButton();
+        scrollPaneTable = new JScrollPane();
+        testsTable = new JTable();
         menu = new JMenu();
         menuBar = new JMenuBar();
         save = new JMenuItem();
@@ -40,8 +46,9 @@ public class ContainerRoadDrawer extends JFrame{
         listCombo.add("BeamNG");
         listCombo.add("MATLAB");
         comboSimulator.setModel(new DefaultComboBoxModel(listCombo.toArray()));
-        
+        speedField.setText("Insert speed");
         okButton.setText("Ok");
+        addButton.setText("Add");
         menu.setText("Menu");
         menuBar.add(menu);
         setJMenuBar(menuBar);
@@ -53,41 +60,60 @@ public class ContainerRoadDrawer extends JFrame{
         menu.add(reset);
         getSavedFile();
         
+        testsTable.setModel(new TestsTableModel());
+        scrollPaneTable.setViewportView(testsTable);
         
-        GroupLayout panelLayout = new GroupLayout(roadDrawer);
-        roadDrawer.setLayout(panelLayout);
-        panelLayout.setHorizontalGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0,0,Short.MAX_VALUE));
-        panelLayout.setVerticalGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0,257,Short.MAX_VALUE));
-        
-        GroupLayout layout = new GroupLayout(getContentPane());
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(comboSimulator, 0, 319, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(scrollPaneTable, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(okButton))
-            .addComponent(roadDrawer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(comboSimulator, javax.swing.GroupLayout.PREFERRED_SIZE, 473, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(speedField, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(roadDrawer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(comboSimulator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(okButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(roadDrawer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(comboSimulator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(speedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(okButton))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(addButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(roadDrawer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(scrollPaneTable))
+                .addContainerGap())
         );
+
         pack();
 
     }
     
-    private JButton okButton;
+    private JButton okButton, addButton;
     private RoadDrawer roadDrawer;
     private JComboBox<String> comboSimulator;
     private JMenu menu;
     private JMenuBar menuBar;
     private JMenuItem save, reset, open;
+    private JScrollPane scrollPaneTable;
+    private JTextField speedField;
+    private JTable testsTable;
     
     public JMenuItem getSaveItem(){
         return this.save;
@@ -109,8 +135,20 @@ public class ContainerRoadDrawer extends JFrame{
         return this.okButton;
     }
     
+    public JButton getAddButton(){
+        return this.addButton;
+    }
+    
     public RoadDrawer getRoadDrawer(){
         return this.roadDrawer;
+    }
+    
+    public JTextField getSpeedField(){
+        return this.speedField;
+    }
+    
+    public JTable getTestsTable(){
+        return this.testsTable;
     }
     
     public void getSavedFile(){

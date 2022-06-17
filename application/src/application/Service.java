@@ -4,6 +4,8 @@ import com.mathworks.engine.MatlabEngine;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -40,7 +43,8 @@ public class Service {
         double[] time = new double[oob.size()];
         double[][] data = new double[oob.size()][oob.size()];
         for (int i = 0; i<oob.size();i++){
-            series.add(i,oob.get(i));
+            double sec = ((double) (i))/1000.0;
+            series.add(sec,oob.get(i));
         }
         XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(series);
@@ -54,10 +58,6 @@ public class Service {
         false,
         false
         );
-        /*ds.addSeries("oob", data);
-        System.out.println("LENGTH: "+data.length);
-        ds.addSeries("oob", data);
-        JFreeChart chart = ChartFactory.createXYLineChart("Test Chart", "x", "y", ds, PlotOrientation.VERTICAL, true, true, false);*/
         JFrame frame = new JFrame("Charts");
         frame.setSize(600, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -112,6 +112,12 @@ public class Service {
                             }
                             while ((lines=readerE.readLine())!=null){
                                 System.out.println("Error : "+lines);
+                                if (lines.contains("AssertionError: Car drove out of the lane")){
+                                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Car drove out of the lane!");
+                                }
+                                if (lines.contains("Connessione in corso interrotta forzatamente dall'host remoto")){
+                                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Connessione in corso interrotta forzatamente dall'host remoto!");
+                                }
                             }
                             
                             createChart(oob);
@@ -144,19 +150,6 @@ public class Service {
                             stringPointY = panel.getRoadDrawer().getStringYinterpolated();
                             panel.getRoadDrawer().writePointsOnFile(stringPointX, stringPointY, Integer.toString(speed)); // scrivo i punti *scelti* (NON interpolati - da aggiungere) sul file chosenPoint.txt
                             eng.eval("runScenario");
-                            /*Future<Void> fPlotInputs = eng.evalAsync("plotLKAInputs(scenario,driverPath)");
-                            Future<Void> fLoad = eng.evalAsync("open_system('LKATestBenchExample')");
-                            while (!fLoad.isDone()){
-                                System.out.println("Opening Simulink model...");
-                                Thread.sleep(10000);
-                            }
-                            eng.evalAsync("set_param('LKATestBenchExample/Safe Lateral Offset','Value','2')");
-                            Future<Void> fSim = eng.evalAsync("sim('LKATestBenchExample'");
-                            while (!fSim.isDone()) {
-                                System.out.println("Running Simulation...");
-                                Thread.sleep(10000);
-                            }
-                            System.out.println(writerO.toString());*/
                             
                             
                            
@@ -178,6 +171,7 @@ public class Service {
             public void actionPerformed(ActionEvent actionEvent){
                 RoadDrawer roadDrawer = panel.getRoadDrawer();
                 roadDrawer.getPoints().clear();
+                roadDrawer.getInterpolatedPoints().clear();
                 roadDrawer.clearStringPointX();
                 roadDrawer.clearStringPointY();
                 System.out.println(roadDrawer.getPoints().size());
@@ -200,7 +194,8 @@ public class Service {
                 json.put("points", chosenPoints);
                 json.put("stringX",panel.getRoadDrawer().getStringPointX());
                 json.put("stringY",panel.getRoadDrawer().getStringPointY());
-                String name = JOptionPane.showInputDialog("Nome del file:");
+                String name = JOptionPane.showInputDialog(null, "Nome del file:","Save", JOptionPane.INFORMATION_MESSAGE);
+                if (name==null) return;
                 try {
                     FileWriter file = new FileWriter("C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\savedFiles\\"+name+".json");
                     file.write(json.toJSONString());
@@ -243,6 +238,69 @@ public class Service {
                 catch (Exception e){
                     e.printStackTrace();
                 }
+            }
+        };
+    }
+    
+    public static ActionListener actionAddButton(ContainerRoadDrawer panel) {
+        return  new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String name = JOptionPane.showInputDialog(null, "Nome del test:","Add", JOptionPane.INFORMATION_MESSAGE);
+                if (name==null) return;
+                String simulator = (String) panel.getComboSimulator().getSelectedItem();
+                Integer speed = Integer.parseInt(panel.getSpeedField().getText());
+                List<Point2D> points = new ArrayList<Point2D>(panel.getRoadDrawer().getPoints());
+                List<Point2D> interpolated = new ArrayList<Point2D>(panel.getRoadDrawer().getInterpolatedPoints());
+                String stringPointX = panel.getRoadDrawer().getStringPointX();
+                String stringPointY = panel.getRoadDrawer().getStringPointY();                
+                Test t = new Test(name,simulator,speed,points,interpolated,stringPointX,stringPointY);
+                ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().add(t);
+                ((TestsTableModel)panel.getTestsTable().getModel()).fireTableDataChanged();
+            }
+            
+        };
+    }
+    
+    public static List<Point2D> cloneList(List<Point2D> old){
+        List<Point2D> result = new ArrayList<Point2D>();
+        for (Point2D p : old){
+            result.add(p);
+        }
+        return result;
+    }
+    
+    public static MouseListener actionTestsTable(ContainerRoadDrawer panel){
+        return new java.awt.event.MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                JTable table = panel.getTestsTable();
+                int row = table.rowAtPoint(event.getPoint());
+                int col = table.columnAtPoint(event.getPoint());
+                Test t = ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().get(row);
+                System.out.println("NOME "+t.getName()+" "+row);
+                System.out.println("premo add, test points "+t.getPoints().size());
+                panel.getRoadDrawer().setPoints(t.getPoints());
+                System.out.println("premo add, size points "+panel.getRoadDrawer().getPoints().size());
+                panel.getSpeedField().setText(t.getSpeed().toString());
+                panel.getRoadDrawer().setInterpolatedPoints(t.getInterpolated());
+                System.out.println("premo add, size interpolated "+panel.getRoadDrawer().getInterpolatedPoints().size());
+                System.out.println("size tests group "+((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().size());
+                panel.getComboSimulator().setSelectedItem(t.getSimulator());
+                panel.getRoadDrawer().setStringPointX(t.getStringPointX());
+                panel.getRoadDrawer().setStringPointY(t.getStringPointY());
+                int index=0;
+                for (Test y : ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup()){
+                    System.out.println("Index "+index);
+                    System.out.println(y.getPoints().size());
+                    for (Point2D p : y.getPoints()){
+                        System.out.println(p.getX()+", "+p.getY());
+                    }
+                    System.out.println(y.getStringPointX());
+                    System.out.println(y.getStringPointY());
+                    index++;
+                }
+                panel.getRoadDrawer().repaint();
             }
         };
     }
