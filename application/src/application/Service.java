@@ -17,10 +17,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingWorker;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -53,11 +55,31 @@ public class Service {
                     return;
                 }
                 Test t = panel.getRoadDrawer().getTest();
-                try {
-                    t.executeTest(path,panel);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                panel.getLoadingPanel().setVisible(true);
+                panel.getProgressBar().setIndeterminate(true);
+                final SwingWorker<Void, Void> myWorker = new SwingWorker<Void,Void>(){
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        t.checkValidity();
+                        return null;
+                    }
+                    
+                    @Override
+                    protected void done() {
+                        panel.getLoadingPanel().setVisible(false);
+                        if (t.getValid()){
+                            final SwingWorker<Void,Void> myWorker2 = new SwingWorker<Void,Void>(){
+                                @Override
+                                protected Void doInBackground() throws Exception {
+                                    t.executeTest(path, panel);
+                                    return null;
+                                }
+                            };
+                            myWorker2.execute();
+                        } 
+                    }
+                };
+                myWorker.execute();
             }
         };
     }
@@ -197,13 +219,25 @@ public class Service {
                 Test t = new Test(name,simulator,speed,points,interpolated,stringPointX,stringPointY);
                 panel.getLoadingPanel().setVisible(true);
                 panel.getProgressBar().setIndeterminate(true);
-                panel.getRoadDrawer().repaint();
-                if (!t.checkValidity()){
-                    return;
-                }
-                panel.getLoadingPanel().setVisible(false);
-                ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().add(t);
-                ((TestsTableModel)panel.getTestsTable().getModel()).fireTableDataChanged();
+                final SwingWorker<Void, Void> myWorker = new SwingWorker<Void, Void>() {
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        t.checkValidity();
+                        return null;
+                    }
+                    
+                    @Override
+                       protected void done() {
+                            panel.getLoadingPanel().setVisible(false);
+                            if (t.getValid()){
+                            System.out.println("qui");
+                            ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().add(t);
+                            ((TestsTableModel)panel.getTestsTable().getModel()).fireTableDataChanged();
+                        }
+                    }
+                    
+                };
+                myWorker.execute();
             }
             
         };

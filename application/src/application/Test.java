@@ -216,14 +216,6 @@ public class Test {
             JOptionPane.showMessageDialog(null,"Insufficient number of points","Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
-        frame.getLoadingPanel().setVisible(true);
-        frame.getProgressBar().setIndeterminate(true);
-        if (!this.valid){
-            if(!checkValidity()){
-            return;
-            }
-        }
-        frame.getLoadingPanel().setVisible(false);
         switch (this.simulator) {
             case "BeamNG":
                 executeTestBeamNG(path);
