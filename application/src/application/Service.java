@@ -1,38 +1,26 @@
 package application;
 
-import com.mathworks.engine.MatlabEngine;
-import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JFrame;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.DefaultXYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -42,156 +30,38 @@ import org.json.simple.parser.JSONParser;
  * @author Anna
  */
 public class Service {
+
     
-    public static void createAndSaveChart(List<Double> oob) throws IOException{
-        XYSeries series = new XYSeries("oob");
-        DefaultXYDataset ds = new DefaultXYDataset();
-        double[] time = new double[oob.size()];
-        double[][] data = new double[oob.size()][oob.size()];
-        for (int i = 0; i<oob.size();i++){
-            double sec = ((double) (i))/1000.0;
-            series.add(sec,oob.get(i));
-        }
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series);
-        JFreeChart chart = ChartFactory.createScatterPlot(
-        "Simulation result",
-        "Time (sec)",
-        "Out of Bound (%)",
-        dataset,
-        PlotOrientation.VERTICAL,
-        false,
-        false,
-        false
-        );
-        JFrame frame = new JFrame("Charts");
-        frame.setSize(600, 400);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-        ChartPanel cp = new ChartPanel(chart);
-        chart.getPlot().setBackgroundPaint(Color.WHITE);
-        frame.getContentPane().add(cp);
-        ChartUtilities.saveChartAsPNG(new File("C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\Result\\chartBeamNG.png"), chart, 600, 400);
-    }
     
     public static ActionListener actionOkButton(ContainerRoadDrawer panel) {
         return  new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                boolean flag = false;
-                String stringPointX = panel.getRoadDrawer().getTest().getStringPointX();
-                String stringPointY = panel.getRoadDrawer().getTest().getStringPointY();
-                String simulator = (String) panel.getComboSimulator().getSelectedItem();
-                List<Double> oob = new ArrayList<>();
-                List<Point2D> points = panel.getRoadDrawer().getTest().getPoints();
-                if (points.size()<=1){
-                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Insufficient number of points","Error",JOptionPane.ERROR_MESSAGE);
+                String path = "C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\Result";
+                panel.getRoadDrawer().getTest().setSimulator(panel.getComboSimulator().getSelectedItem().toString());
+                Integer speed = 0;
+                try{
+                    speed = Integer.parseInt(panel.getSpeedField().getText());
+                    panel.getRoadDrawer().getTest().setSpeed(speed);
+                }
+                catch(NumberFormatException e){
+                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be a number!","Invalid speed",JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                if (points.size()>1){
-                    
-                    //----------------BEAMNG----------------
-                    
-                    if (simulator.equals("BeamNG")){ 
-                        try{
-                            Integer speed = 0;
-                            try{
-                                speed = Integer.parseInt(panel.getSpeedField().getText());
-                                panel.getRoadDrawer().getTest().setSpeed(speed);
-                            }
-                            catch(NumberFormatException e){
-                                JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be a number!","Invalid speed",JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-                            if (speed<=0) {
-                                JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be greater than zero!","Invalid speed",JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-                            boolean valid = panel.getRoadDrawer().checkPoints(Integer.toString(speed)); // CONTROLLO CHE IL TEST SIA VALIDO
-                            if (!valid){
-                                return;
-                            }
-                            ProcessBuilder builder = new ProcessBuilder("python", "C:\\Users\\kikki\\PycharmProjects\\progetto\\competition.py","--module-name", "rs_anglelength.run_al", "--class-name", "AngleLengthGenerator", "--time-budget", "10000", "--executor", "beamng", "--map-size", "500");//, "--visualize-tests");
-                            Process process = builder.start();
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                            BufferedReader readerE = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                            String lines = null;
-                            while((lines=reader.readLine())!=null){
-                                System.out.println("Output: "+lines);
-                                if(lines.equals("end")){
-                                    flag = false;
-                                }
-                                if (flag){
-                                    oob.add(Double.parseDouble(lines));
-                                }
-                                if (lines.equals("oob")){
-                                    flag = true;
-                                }
-                            }
-                            while ((lines=readerE.readLine())!=null){
-                                System.out.println("Error : "+lines);
-                                if (lines.contains("AssertionError: Car drove out of the lane")){
-                                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Car drove out of the lane!");
-                                }
-                                if (lines.contains("Connessione in corso interrotta forzatamente dall'host remoto")){
-                                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Connessione in corso interrotta forzatamente dall'host remoto!");
-                                }
-                            }
-                            
-                            createAndSaveChart(oob);
-                            
-                            
-                        } catch(Exception e){
-                            System.out.println("Errore:");
-                            e.printStackTrace();
-                        }
-                    }
-                    
-                    //----------------MATLAB----------------
-                    
-                    else if (simulator.equals("MATLAB")){
-                        try{
-                            Integer speed = 0;
-                            try{
-                                speed = Integer.parseInt(panel.getSpeedField().getText());
-                                panel.getRoadDrawer().getTest().setSpeed(speed);
-                            }
-                            catch(NumberFormatException e){
-                                JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be a number!","Invalid speed",JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-                            if (speed<=0) {
-                                JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be greater than zero!","Invalid speed",JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-                            System.out.println("MATLAB");
-                            boolean valid = panel.getRoadDrawer().checkPoints(null); // CONTROLLO CHE IL TEST SIA VALIDO
-                            if (!valid){
-                                return;
-                            }
-                            MatlabEngine eng = MatlabEngine.startMatlab();
-                            eng.eval("cd 'C:\\Users\\kikki\\Documents\\MATLAB\\Examples\\R2022a\\autonomous_control\\LaneKeepingAssistWithLaneDetectionExample'");
-                            StringWriter writerO = new StringWriter();
-                            StringWriter writerE = new StringWriter();
-                            stringPointX = panel.getRoadDrawer().getTest().getStringXinterpolated();
-                            stringPointY = panel.getRoadDrawer().getTest().getStringYinterpolated();
-                            panel.getRoadDrawer().writePointsOnFile(stringPointX, stringPointY, panel.getRoadDrawer().getTest().getSpeed().toString()); // scrivo i punti *scelti* (NON interpolati - da aggiungere) sul file chosenPoint.txt
-                            eng.eval("runScenario");
-                            
-                            
-                           
-                            
-                        } catch (Exception e){
-                            System.out.println("Errore:");
-                            e.printStackTrace();
-                        }
-                        
-
-                    }
+                if (speed<=0) {
+                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be greater than zero!","Invalid speed",JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                Test t = panel.getRoadDrawer().getTest();
+                try {
+                    t.executeTest(path);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         };
     }
+    
     public static ActionListener actionReset(ContainerRoadDrawer panel){
         return new ActionListener(){
             @Override
@@ -205,6 +75,7 @@ public class Service {
             }
         };
     }
+    
     public static ActionListener actionSave(ContainerRoadDrawer panel){
         return new ActionListener(){
             @Override
@@ -244,6 +115,20 @@ public class Service {
             }
         };
     }
+    
+        public static ActionListener actionResultFolder(ContainerRoadDrawer panel){
+        return new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent actionEvent){
+                try {
+                    Desktop.getDesktop().open(new File("C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\Result"));
+                } catch (IOException ex) {
+                    Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+    }
+    
     public static ActionListener actionOpen(ContainerRoadDrawer panel){
         return new ActionListener(){
             @Override
@@ -302,10 +187,6 @@ public class Service {
                     JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be greater than zero!","Invalid speed",JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                boolean valid = panel.getRoadDrawer().checkPoints(Integer.toString(speed)); // CONTROLLO CHE IL TEST SIA VALIDO
-                if (!valid){
-                    return;
-                }
                 String name = JOptionPane.showInputDialog(null, "Test name:","Add", JOptionPane.INFORMATION_MESSAGE);
                 if (name==null) return;
                 String simulator = (String) panel.getComboSimulator().getSelectedItem();
@@ -314,6 +195,9 @@ public class Service {
                 String stringPointX = panel.getRoadDrawer().getTest().getStringPointX();
                 String stringPointY = panel.getRoadDrawer().getTest().getStringPointY();                
                 Test t = new Test(name,simulator,speed,points,interpolated,stringPointX,stringPointY);
+                if (!t.checkValidity()){
+                    return;
+                }
                 ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().add(t);
                 ((TestsTableModel)panel.getTestsTable().getModel()).fireTableDataChanged();
             }
@@ -340,7 +224,7 @@ public class Service {
         };
     }
     
-        public static ActionListener actionRunButton(ContainerRoadDrawer panel) {
+    public static ActionListener actionRunButton(ContainerRoadDrawer panel) {
         return  new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -350,7 +234,11 @@ public class Service {
                 ArrayList<Test> testList = ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup();
                 new File(path).mkdirs();
                 for (Test t : testList){
-                    //executeTest(t.getName(),path);
+                    try {
+                        t.executeTest(path);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
             

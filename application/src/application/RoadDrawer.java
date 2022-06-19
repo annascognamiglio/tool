@@ -96,45 +96,6 @@ public class RoadDrawer extends JPanel{
             e.printStackTrace();
         }
     }
-
-    
-    public boolean checkPoints(String speed){ // validità del test
-        String res = null;
-        boolean valid = false;
-        try {
-            String lines = null;
-            ProcessBuilder builder = new ProcessBuilder("python", "C:\\Users\\kikki\\PycharmProjects\\progetto\\validate_test.py", test.getStringPointX().substring(0, test.getStringPointX().length()-1), test.getStringPointY().substring(0, test.getStringPointY().length()-1));
-            Process process = builder.start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            res=reader.readLine();
-            BufferedReader readerE = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            while ((lines=readerE.readLine())!=null){
-                System.out.println("Error : "+lines);
-            }
-            if (res.equals("Test seems valid")){
-                JOptionPane.showMessageDialog(this, res);
-                if(speed!=null){
-                    writePointsOnFile(this.test.getStringPointX().substring(0, this.test.getStringPointX().length()-1), this.test.getStringPointY().substring(0, test.getStringPointY().length()-1), speed);
-                } //se il test è valido scrive i punti scelti sul file chosenPoint.txt
-                valid = true;
-            }
-            else JOptionPane.showMessageDialog(this,res,"Test invalid",JOptionPane.ERROR_MESSAGE);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return valid;
-    }
-    
-    public void writePointsOnFile(String x, String y, String speed) throws Exception{
-        FileWriter myWriter = new FileWriter("chosenPoint.txt");
-        myWriter.write(x);
-        myWriter.write("\n");
-        myWriter.write(y);
-        myWriter.write("\n");
-        myWriter.write(speed);
-        myWriter.close();
-    }
     
     @Override
     public void paintComponent (Graphics g){

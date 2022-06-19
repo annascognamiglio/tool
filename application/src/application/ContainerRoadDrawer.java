@@ -39,6 +39,7 @@ public class ContainerRoadDrawer extends JFrame{
         menuBar = new JMenuBar();
         save = new JMenuItem();
         reset = new JMenuItem();
+        resultFolder = new JMenuItem();
         open = new JMenu();
         
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -47,6 +48,7 @@ public class ContainerRoadDrawer extends JFrame{
         List<String> listCombo = new ArrayList<>();
         listCombo.add("BeamNG");
         listCombo.add("MATLAB");
+        listCombo.add("All");
         comboSimulator.setModel(new DefaultComboBoxModel(listCombo.toArray()));
         speedField.setText("Insert speed");
         okButton.setText("Ok");
@@ -56,12 +58,14 @@ public class ContainerRoadDrawer extends JFrame{
         menuBar.add(menu);
         setJMenuBar(menuBar);
         save.setText("Save");
+        resultFolder.setText("Result Folder");
         runButton.setText("Run");
         reset.setText("Reset");
         open.setText("Open");
         menu.add(open);
         menu.add(save);
         menu.add(reset);
+        menu.add(resultFolder);
         getSavedFile();
         
         
@@ -122,7 +126,7 @@ public class ContainerRoadDrawer extends JFrame{
     private JComboBox<String> comboSimulator;
     private JMenu menu;
     private JMenuBar menuBar;
-    private JMenuItem save, reset, open;
+    private JMenuItem save, reset, open, resultFolder;
     private JScrollPane scrollPaneTable;
     private JTextField speedField;
     private JTable testsTable;
@@ -133,6 +137,10 @@ public class ContainerRoadDrawer extends JFrame{
     
     public JMenuItem getResetItem(){
         return this.reset;
+    }
+    
+    public JMenuItem getResultFolderItem(){
+        return this.resultFolder;
     }
     
     public JMenuItem getOpenItem(){
