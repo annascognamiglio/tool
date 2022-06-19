@@ -44,6 +44,7 @@ public class ContainerRoadDrawer extends JFrame{
         reset = new JMenuItem();
         resultFolder = new JMenuItem();
         open = new JMenu();
+        export = new JMenuItem();
         loadingPanel = new javax.swing.JPanel();
         loadingText = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
@@ -63,6 +64,7 @@ public class ContainerRoadDrawer extends JFrame{
         menu.setText("Menu");
         menuBar.add(menu);
         setJMenuBar(menuBar);
+        export.setText("Export as OpenDrive");
         save.setText("Save");
         resultFolder.setText("Result Folder");
         runButton.setText("Run");
@@ -71,6 +73,7 @@ public class ContainerRoadDrawer extends JFrame{
         menu.add(open);
         menu.add(save);
         menu.add(reset);
+        menu.add(export);
         menu.add(resultFolder);
         getSavedFile();
         
@@ -168,7 +171,7 @@ public class ContainerRoadDrawer extends JFrame{
     private JComboBox<String> comboSimulator;
     private JMenu menu;
     private JMenuBar menuBar;
-    private JMenuItem save, reset, open, resultFolder;
+    private JMenuItem save, reset, open, resultFolder, export;
     private JScrollPane scrollPaneTable;
     private JTextField speedField;
     private JTable testsTable;
@@ -192,7 +195,9 @@ public class ContainerRoadDrawer extends JFrame{
         this.loadingPanel = loadingPanel;
     }
     
-    
+    public JMenuItem getExportItem(){
+        return this.export;
+    }
     
     public JMenuItem getSaveItem(){
         return this.save;

@@ -27,6 +27,7 @@ public class App {
                 drawer.getResetItem().addActionListener(Service.actionReset(drawer));
                 drawer.getOpenItem().addActionListener(Service.actionOpen(drawer));
                 drawer.getSaveItem().addActionListener(Service.actionSave(drawer));
+                drawer.getExportItem().addActionListener(Service.actionExport(drawer));
                 drawer.getResultFolderItem().addActionListener(Service.actionResultFolder(drawer));
                 drawer.getAddButton().addActionListener(Service.actionAddButton(drawer));
                 drawer.getRemoveButton().addActionListener(Service.actionRemoveButton(drawer));

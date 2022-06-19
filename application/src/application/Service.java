@@ -1,5 +1,6 @@
 package application;
 
+import com.mathworks.engine.MatlabEngine;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,11 +14,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -33,8 +34,6 @@ import org.json.simple.parser.JSONParser;
  */
 public class Service {
 
-    
-    
     public static ActionListener actionOkButton(ContainerRoadDrawer panel) {
         return  new ActionListener() {
             @Override
@@ -98,6 +97,41 @@ public class Service {
         };
     }
     
+    public static ActionListener actionExport(ContainerRoadDrawer panel){
+        return new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent actionEvent){
+                try{
+                    String path = "C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\Export";
+                    MatlabEngine eng = MatlabEngine.startMatlab();
+                    eng.eval("cd 'C:\\Users\\kikki\\Documents\\MATLAB\\Examples\\R2022a\\autonomous_control\\LaneKeepingAssistWithLaneDetectionExample'");
+                    StringWriter writerO = new StringWriter();
+                    StringWriter writerE = new StringWriter();
+                    String xInterpolated = panel.getRoadDrawer().getTest().getStringXinterpolated();
+                    String yInterpolated = panel.getRoadDrawer().getTest().getStringYinterpolated();
+                    panel.getRoadDrawer().getTest().writePointsOnFile(xInterpolated, yInterpolated, panel.getRoadDrawer().getTest().getSpeed().toString()); // scrivo i punti *scelti* (NON interpolati - da aggiungere) sul file chosenPoint.txt
+                    if (panel.getRoadDrawer().getTest().getName().equals("")){
+                        LocalDateTime dateTime = LocalDateTime.now();
+                        String timeStamp = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss").format(dateTime);
+                        panel.getRoadDrawer().getTest().writeNameOnFile(path+"\\"+timeStamp);
+                    }
+                    else {
+                        panel.getRoadDrawer().getTest().writeNameOnFile(path+"\\"+panel.getRoadDrawer().getTest().getName());
+                    }
+                    eng.eval("exportScenario");
+                }catch (Exception e){
+                    System.out.println("Errore:");
+                    e.printStackTrace();
+                }
+                try {
+                    Desktop.getDesktop().open(new File("C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\Export"));
+                } catch (IOException ex) {
+                    Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+    }
+    
     public static ActionListener actionSave(ContainerRoadDrawer panel){
         return new ActionListener(){
             @Override
@@ -138,7 +172,7 @@ public class Service {
         };
     }
     
-        public static ActionListener actionResultFolder(ContainerRoadDrawer panel){
+    public static ActionListener actionResultFolder(ContainerRoadDrawer panel){
         return new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent actionEvent){
