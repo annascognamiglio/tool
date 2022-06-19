@@ -15,7 +15,7 @@ def get_road_points(array):
         )
     return road_points
 
-test_executor = MockExecutor(result_folder="results", time_budget=1e10, map_size=500, road_visualizer=RoadTestVisualizer(map_size=500))
+test_executor = MockExecutor(result_folder="results", time_budget=1e10, map_size=1000, road_visualizer=RoadTestVisualizer(map_size=1000))
 X = np.asarray(sys.argv[1].split(','),dtype=float)
 Y = np.asarray(sys.argv[2].split(','),dtype=float)
 final = np.column_stack((X, Y))

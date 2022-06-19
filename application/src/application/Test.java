@@ -26,6 +26,60 @@ public class Test {
         this.stringPointX = sPX;
         this.stringPointY = sPY;
     }
+    
+    public Test(String s,Integer speed){
+        this.name = "";
+        this.simulator = s;
+        this.speed = speed;
+        this.points = new ArrayList<>();
+        this.interpolated = new ArrayList<>();
+        this.stringPointX = "";
+        this.stringPointY = "";
+    }
+    
+    public Test(){
+        this.name = "";
+        this.simulator = "";
+        this.speed = 0;
+        this.points = new ArrayList<>();
+        this.interpolated = new ArrayList<>();
+        this.stringPointX = "";
+        this.stringPointY = "";
+    }
+    
+    public String getStringXinterpolated(){
+        String res = "";
+        for (Point2D p : interpolated){
+            res = res + p.getX()+" ";
+        }
+        res = res.substring(0, res.length()-1);
+        return res;
+    }
+    
+    public String getStringYinterpolated(){
+        String res = "";
+        for (Point2D p : interpolated){
+            res = res + p.getY()+" ";
+        }
+        res = res.substring(0, res.length()-1);
+        return res;
+    }
+    
+    public void addToStringPointX(double x){
+        this.stringPointX = stringPointX + x +",";
+    }
+    
+    public void addToStringPointY(double y){
+        this.stringPointY = stringPointY + y +",";
+    }
+    
+    public void clearStringPointX(){
+        this.stringPointX = "";
+    }
+    
+    public void clearStringPointY(){
+        this.stringPointY = "";
+    }
 
     public String getName() {
         return name;
@@ -55,16 +109,12 @@ public class Test {
         return this.points;
     } 
     
+    public void setPoints(List<Point2D> points) {
+        this.points = points;
+    }
+ 
     public void setSpeed(int speed){
         this.speed = speed;
-    }
-    
-    public void setInterpolatedPoints(List<Point2D> p){
-        this.interpolated = p;
-    }
-    
-    public List<Point2D> getInterpolatedPoints(){
-        return this.interpolated;
     }
 
     public List<Point2D> getInterpolated() {

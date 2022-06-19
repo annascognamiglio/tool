@@ -4,26 +4,32 @@ import com.mathworks.engine.MatlabEngine;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -37,7 +43,7 @@ import org.json.simple.parser.JSONParser;
  */
 public class Service {
     
-    public static void createChart(List<Double> oob){
+    public static void createAndSaveChart(List<Double> oob) throws IOException{
         XYSeries series = new XYSeries("oob");
         DefaultXYDataset ds = new DefaultXYDataset();
         double[] time = new double[oob.size()];
@@ -65,6 +71,7 @@ public class Service {
         ChartPanel cp = new ChartPanel(chart);
         chart.getPlot().setBackgroundPaint(Color.WHITE);
         frame.getContentPane().add(cp);
+        ChartUtilities.saveChartAsPNG(new File("C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\Result\\chartBeamNG.png"), chart, 600, 400);
     }
     
     public static ActionListener actionOkButton(ContainerRoadDrawer panel) {
@@ -72,11 +79,11 @@ public class Service {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 boolean flag = false;
-                String stringPointX = panel.getRoadDrawer().getStringPointX();
-                String stringPointY = panel.getRoadDrawer().getStringPointY();
+                String stringPointX = panel.getRoadDrawer().getTest().getStringPointX();
+                String stringPointY = panel.getRoadDrawer().getTest().getStringPointY();
                 String simulator = (String) panel.getComboSimulator().getSelectedItem();
                 List<Double> oob = new ArrayList<>();
-                List<Point2D> points = panel.getRoadDrawer().getPoints();
+                List<Point2D> points = panel.getRoadDrawer().getTest().getPoints();
                 if (points.size()<=1){
                     JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Insufficient number of points","Error",JOptionPane.ERROR_MESSAGE);
                     return;
@@ -87,9 +94,20 @@ public class Service {
                     
                     if (simulator.equals("BeamNG")){ 
                         try{
-                            int maxSpeed = panel.getRoadDrawer().getSpeedFromUser("Please insert max speed:");
-                            if (maxSpeed==0) return;
-                            boolean valid = panel.getRoadDrawer().checkPoints(Integer.toString(maxSpeed)); // CONTROLLO CHE IL TEST SIA VALIDO
+                            Integer speed = 0;
+                            try{
+                                speed = Integer.parseInt(panel.getSpeedField().getText());
+                                panel.getRoadDrawer().getTest().setSpeed(speed);
+                            }
+                            catch(NumberFormatException e){
+                                JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be a number!","Invalid speed",JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+                            if (speed<=0) {
+                                JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be greater than zero!","Invalid speed",JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+                            boolean valid = panel.getRoadDrawer().checkPoints(Integer.toString(speed)); // CONTROLLO CHE IL TEST SIA VALIDO
                             if (!valid){
                                 return;
                             }
@@ -120,7 +138,7 @@ public class Service {
                                 }
                             }
                             
-                            createChart(oob);
+                            createAndSaveChart(oob);
                             
                             
                         } catch(Exception e){
@@ -133,10 +151,19 @@ public class Service {
                     
                     else if (simulator.equals("MATLAB")){
                         try{
-                            // String speed = (String) panel.getRoadDrawer().getSpeedFromCombo().getSelectedItem();
-                            // panel.getRoadDrawer().setSpeed(Integer.parseInt(speed));
-                            int speed = panel.getRoadDrawer().getSpeedFromUser("Please insert speed:");
-                            if (speed==0) return;
+                            Integer speed = 0;
+                            try{
+                                speed = Integer.parseInt(panel.getSpeedField().getText());
+                                panel.getRoadDrawer().getTest().setSpeed(speed);
+                            }
+                            catch(NumberFormatException e){
+                                JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be a number!","Invalid speed",JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+                            if (speed<=0) {
+                                JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be greater than zero!","Invalid speed",JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
                             System.out.println("MATLAB");
                             boolean valid = panel.getRoadDrawer().checkPoints(null); // CONTROLLO CHE IL TEST SIA VALIDO
                             if (!valid){
@@ -146,9 +173,9 @@ public class Service {
                             eng.eval("cd 'C:\\Users\\kikki\\Documents\\MATLAB\\Examples\\R2022a\\autonomous_control\\LaneKeepingAssistWithLaneDetectionExample'");
                             StringWriter writerO = new StringWriter();
                             StringWriter writerE = new StringWriter();
-                            stringPointX = panel.getRoadDrawer().getStringXinterpolated();
-                            stringPointY = panel.getRoadDrawer().getStringYinterpolated();
-                            panel.getRoadDrawer().writePointsOnFile(stringPointX, stringPointY, Integer.toString(speed)); // scrivo i punti *scelti* (NON interpolati - da aggiungere) sul file chosenPoint.txt
+                            stringPointX = panel.getRoadDrawer().getTest().getStringXinterpolated();
+                            stringPointY = panel.getRoadDrawer().getTest().getStringYinterpolated();
+                            panel.getRoadDrawer().writePointsOnFile(stringPointX, stringPointY, panel.getRoadDrawer().getTest().getSpeed().toString()); // scrivo i punti *scelti* (NON interpolati - da aggiungere) sul file chosenPoint.txt
                             eng.eval("runScenario");
                             
                             
@@ -170,11 +197,10 @@ public class Service {
             @Override
             public void actionPerformed(ActionEvent actionEvent){
                 RoadDrawer roadDrawer = panel.getRoadDrawer();
-                roadDrawer.getPoints().clear();
-                roadDrawer.getInterpolatedPoints().clear();
-                roadDrawer.clearStringPointX();
-                roadDrawer.clearStringPointY();
-                System.out.println(roadDrawer.getPoints().size());
+                roadDrawer.getTest().getPoints().clear();
+                roadDrawer.getTest().getInterpolated().clear();
+                roadDrawer.getTest().clearStringPointX();
+                roadDrawer.getTest().clearStringPointY();
                 roadDrawer.repaint();
             }
         };
@@ -185,15 +211,23 @@ public class Service {
             public void actionPerformed(ActionEvent actionEvent){
                 JSONObject json = new JSONObject();
                 JSONArray chosenPoints = new JSONArray();
-                for (Point2D point : panel.getRoadDrawer().getPoints()){
+                JSONArray interpolatedPoints = new JSONArray();
+                for (Point2D point : panel.getRoadDrawer().getTest().getPoints()){
                     JSONObject p = new JSONObject();
                     p.put("x", String.valueOf(point.getX()));
                     p.put("y", String.valueOf(point.getY()));
                     chosenPoints.add(p);
                 }
+                for (Point2D point : panel.getRoadDrawer().getTest().getInterpolated()){
+                    JSONObject p = new JSONObject();
+                    p.put("x", String.valueOf(point.getX()));
+                    p.put("y", String.valueOf(point.getY()));
+                    interpolatedPoints.add(p);
+                }
                 json.put("points", chosenPoints);
-                json.put("stringX",panel.getRoadDrawer().getStringPointX());
-                json.put("stringY",panel.getRoadDrawer().getStringPointY());
+                json.put("interpolated", interpolatedPoints);
+                json.put("stringX",panel.getRoadDrawer().getTest().getStringPointX());
+                json.put("stringY",panel.getRoadDrawer().getTest().getStringPointY());
                 String name = JOptionPane.showInputDialog(null, "Nome del file:","Save", JOptionPane.INFORMATION_MESSAGE);
                 if (name==null) return;
                 try {
@@ -215,7 +249,7 @@ public class Service {
             @Override
             public void actionPerformed(ActionEvent actionEvent){
                 List<Point2D> newPointsList = new ArrayList<>();
-                List<Point2D> newInterpolatedPointsList = new ArrayList<>();
+                List<Point2D> newInterpolatedList = new ArrayList<>();
                 String fileName = actionEvent.getActionCommand();
                 JSONParser jsonParser = new JSONParser();
                 try (FileReader reader = new FileReader("C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\savedFiles\\"+fileName)){
@@ -228,11 +262,21 @@ public class Service {
                         Point2D newPoint = new Point2D.Double(x,y);
                         newPointsList.add(newPoint);
                     }
+                    JSONArray interpolated = (JSONArray) json.get("interpolated");
+                    for (JSONObject p : (Iterable<JSONObject>)interpolated){
+                        double x = Double.valueOf((String) p.get("x"));
+                        double y = Double.valueOf((String) p.get("y"));
+                        Point2D newPoint = new Point2D.Double(x,y);
+                        newInterpolatedList.add(newPoint);
+                    }
                     Object stringX = json.get("stringX");
                     Object stringY = json.get("stringY");
-                    panel.getRoadDrawer().setPoints(newPointsList);
-                    panel.getRoadDrawer().setStringPointX(stringX.toString());
-                    panel.getRoadDrawer().setStringPointY(stringY.toString());
+                    panel.getRoadDrawer().getTest().setPoints(newPointsList);
+                    panel.getRoadDrawer().getTest().setInterpolated(newInterpolatedList);
+                    panel.getRoadDrawer().getTest().setStringPointX(stringX.toString());
+                    panel.getRoadDrawer().getTest().setStringPointY(stringY.toString());
+                    panel.getRoadDrawer().setInterpolatedS(true);
+                    panel.getRootPane().repaint();
                            
                 }
                 catch (Exception e){
@@ -246,14 +290,29 @@ public class Service {
         return  new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                String name = JOptionPane.showInputDialog(null, "Nome del test:","Add", JOptionPane.INFORMATION_MESSAGE);
+                Integer speed = 0;
+                try{
+                    speed = Integer.parseInt(panel.getSpeedField().getText());
+                }
+                catch(NumberFormatException e){
+                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be a number!","Invalid speed",JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (speed<=0) {
+                    JOptionPane.showMessageDialog(panel.getRoadDrawer(),"Speed must be greater than zero!","Invalid speed",JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                boolean valid = panel.getRoadDrawer().checkPoints(Integer.toString(speed)); // CONTROLLO CHE IL TEST SIA VALIDO
+                if (!valid){
+                    return;
+                }
+                String name = JOptionPane.showInputDialog(null, "Test name:","Add", JOptionPane.INFORMATION_MESSAGE);
                 if (name==null) return;
                 String simulator = (String) panel.getComboSimulator().getSelectedItem();
-                Integer speed = Integer.parseInt(panel.getSpeedField().getText());
-                List<Point2D> points = new ArrayList<Point2D>(panel.getRoadDrawer().getPoints());
-                List<Point2D> interpolated = new ArrayList<Point2D>(panel.getRoadDrawer().getInterpolatedPoints());
-                String stringPointX = panel.getRoadDrawer().getStringPointX();
-                String stringPointY = panel.getRoadDrawer().getStringPointY();                
+                List<Point2D> points = new ArrayList<>(panel.getRoadDrawer().getTest().getPoints());
+                List<Point2D> interpolated = new ArrayList<>(panel.getRoadDrawer().getTest().getInterpolated());
+                String stringPointX = panel.getRoadDrawer().getTest().getStringPointX();
+                String stringPointY = panel.getRoadDrawer().getTest().getStringPointY();                
                 Test t = new Test(name,simulator,speed,points,interpolated,stringPointX,stringPointY);
                 ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().add(t);
                 ((TestsTableModel)panel.getTestsTable().getModel()).fireTableDataChanged();
@@ -262,45 +321,76 @@ public class Service {
         };
     }
     
-    public static List<Point2D> cloneList(List<Point2D> old){
-        List<Point2D> result = new ArrayList<Point2D>();
-        for (Point2D p : old){
-            result.add(p);
-        }
-        return result;
+    public static ActionListener actionRemoveButton(ContainerRoadDrawer panel) {
+        return  new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (panel.getTestsTable().getSelectedRow()!=-1){
+                    ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().remove(panel.getTestsTable().getSelectedRow());
+                    ((TestsTableModel)panel.getTestsTable().getModel()).fireTableDataChanged();
+                    RoadDrawer roadDrawer = panel.getRoadDrawer();
+                    roadDrawer.getTest().getPoints().clear();
+                    roadDrawer.getTest().getInterpolated().clear();
+                    roadDrawer.getTest().clearStringPointX();
+                    roadDrawer.getTest().clearStringPointY();
+                    roadDrawer.repaint();
+                }
+            }
+            
+        };
+    }
+    
+        public static ActionListener actionRunButton(ContainerRoadDrawer panel) {
+        return  new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                LocalDateTime dateTime = LocalDateTime.now();
+                String timeStamp = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss").format(dateTime);
+                String path = "C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\Result\\"+timeStamp;
+                ArrayList<Test> testList = ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup();
+                new File(path).mkdirs();
+                for (Test t : testList){
+                    //executeTest(t.getName(),path);
+                }
+            }
+            
+        };
     }
     
     public static MouseListener actionTestsTable(ContainerRoadDrawer panel){
-        return new java.awt.event.MouseAdapter(){
+        return new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent event) {
                 JTable table = panel.getTestsTable();
                 int row = table.rowAtPoint(event.getPoint());
                 int col = table.columnAtPoint(event.getPoint());
                 Test t = ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().get(row);
-                System.out.println("NOME "+t.getName()+" "+row);
-                System.out.println("premo add, test points "+t.getPoints().size());
                 panel.getRoadDrawer().setPoints(t.getPoints());
-                System.out.println("premo add, size points "+panel.getRoadDrawer().getPoints().size());
                 panel.getSpeedField().setText(t.getSpeed().toString());
-                panel.getRoadDrawer().setInterpolatedPoints(t.getInterpolated());
-                System.out.println("premo add, size interpolated "+panel.getRoadDrawer().getInterpolatedPoints().size());
-                System.out.println("size tests group "+((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().size());
+                panel.getRoadDrawer().getTest().setInterpolated(t.getInterpolated());
+                panel.getRoadDrawer().setInterpolatedS(true);
                 panel.getComboSimulator().setSelectedItem(t.getSimulator());
-                panel.getRoadDrawer().setStringPointX(t.getStringPointX());
-                panel.getRoadDrawer().setStringPointY(t.getStringPointY());
-                int index=0;
-                for (Test y : ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup()){
-                    System.out.println("Index "+index);
-                    System.out.println(y.getPoints().size());
-                    for (Point2D p : y.getPoints()){
-                        System.out.println(p.getX()+", "+p.getY());
-                    }
-                    System.out.println(y.getStringPointX());
-                    System.out.println(y.getStringPointY());
-                    index++;
-                }
+                panel.getRoadDrawer().getTest().setStringPointX(t.getStringPointX());
+                panel.getRoadDrawer().getTest().setStringPointY(t.getStringPointY());
                 panel.getRoadDrawer().repaint();
+            }
+        };
+    }
+    
+    public static FocusListener actionSpeedField(ContainerRoadDrawer panel){
+        return new FocusListener(){
+            @Override
+            public void focusGained(FocusEvent e){
+                if(panel.getSpeedField().getText().equals("Insert speed")){
+                    panel.getSpeedField().setText("");
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e){
+                if (panel.getSpeedField().getText().isEmpty()){
+                    panel.getSpeedField().setText("Insert speed");
+                }
             }
         };
     }

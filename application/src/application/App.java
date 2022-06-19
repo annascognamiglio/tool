@@ -28,7 +28,11 @@ public class App {
                 drawer.getOpenItem().addActionListener(Service.actionOpen(drawer));
                 drawer.getSaveItem().addActionListener(Service.actionSave(drawer));
                 drawer.getAddButton().addActionListener(Service.actionAddButton(drawer));
+                drawer.getRemoveButton().addActionListener(Service.actionRemoveButton(drawer));
+                drawer.getRunButton().addActionListener(Service.actionRunButton(drawer));
+                drawer.getSpeedField().addFocusListener(Service.actionSpeedField(drawer));
                 drawer.getTestsTable().addMouseListener(Service.actionTestsTable(drawer));
+                
             }
         });
     }

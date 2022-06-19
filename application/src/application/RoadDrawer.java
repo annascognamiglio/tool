@@ -29,97 +29,49 @@ import javax.swing.JPanel;
  */
 public class RoadDrawer extends JPanel{
     
-    private List<Point2D> points = new ArrayList<>();
-    private List<Point2D> interpolated = new ArrayList<>();
-    private int speed = 50;
-    private String stringPointX = "";
-    private String stringPointY = "";
+    private Test test = new Test();
+    private Boolean interpolatedS = false;
     
     public RoadDrawer(){
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e){
-                System.out.println("Nuovo punto cliccato: "+e.getX() + ", " + e.getY());
                 Point2D p = new Point2D.Double(e.getX(),e.getY());
-                points.add(p);
-                stringPointX = stringPointX + p.getX()+",";
-                stringPointY = stringPointY + p.getY()+",";
+                interpolatedS = false;
+                test.getPoints().add(p);
+                test.addToStringPointX(p.getX());
+                test.addToStringPointY(p.getY());
                 repaint();
             }
         });
     }
-    
-    public String getStringXinterpolated(){
-        String res = "";
-        for (Point2D p : interpolated){
-            res = res + p.getX()+" ";
-        }
-        res = res.substring(0, res.length()-1);
-        return res;
-    }
-    
-    public String getStringYinterpolated(){
-        String res = "";
-        for (Point2D p : interpolated){
-            res = res + p.getY()+" ";
-        }
-        res = res.substring(0, res.length()-1);
-        return res;
-    }
-        
-    public List<Point2D> getPoints(){
-        return this.points;
-    } 
-    
-    public void setSpeed(int speed){
-        this.speed = speed;
-    }
-    
     public void setPoints(List<Point2D> p){
-        this.points = new ArrayList<Point2D>(p);
+        this.test.setPoints(new ArrayList<>(p));
         repaint();
     }
     
-    public void setInterpolatedPoints(List<Point2D> p){
-        this.interpolated = p;
+    public Test getTest() {
+        return test;
+    }
+
+    public void setTest(Test test) {
+        this.test = test;
+    }
+
+    public Boolean getInterpolatedS() {
+        return interpolatedS;
+    }
+
+    public void setInterpolatedS(Boolean interpolatedS) {
+        this.interpolatedS = interpolatedS;
     }
     
-    public int getSpeed(){
-        return this.speed;
-    }
     
-    public List<Point2D> getInterpolatedPoints(){
-        return this.interpolated;
-    }
-    
-    public String getStringPointX(){
-        return this.stringPointX;
-    }
-    
-    public String getStringPointY(){
-        return this.stringPointY;
-    }
-    
-    public void setStringPointX(String stringPointX){
-        this.stringPointX = stringPointX;
-    }
-    
-    public void setStringPointY(String stringPointY){
-        this.stringPointY = stringPointY;
-    }
-    
-    public void clearStringPointX(){
-        this.stringPointX = "";
-    }
-    
-    public void clearStringPointY(){
-        this.stringPointY = "";
-    }
     
     public void interpolatePoints (){ //passo a python i punti scelti (attraverso le stringhe di punti) e ottengo quelli interpolati
         try {
-            interpolated.clear();
-            ProcessBuilder builder = new ProcessBuilder("python", "C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\createSpline.py", stringPointX.substring(0, stringPointX.length()-1), stringPointY.substring(0, stringPointY.length()-1));
+            test.getInterpolated().clear();
+            ProcessBuilder builder = new ProcessBuilder("python", "C:\\Users\\kikki\\PycharmProjects\\progetto\\application\\createSpline.py", test.getStringPointX().substring(0, test.getStringPointX().length()-1), test.getStringPointY().substring(0, test.getStringPointY().length()-1));
             Process process = builder.start();
             BufferedReader readerI = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String lines = null;
@@ -131,7 +83,7 @@ public class RoadDrawer extends JPanel{
                                     Double.parseDouble(xnew),
                                     Double.parseDouble(ynew)
                                 );
-                interpolated.add(p);
+                test.getInterpolated().add(p);
                 
             }
             BufferedReader readerE = new BufferedReader(new InputStreamReader(process.getErrorStream()));
@@ -144,27 +96,14 @@ public class RoadDrawer extends JPanel{
             e.printStackTrace();
         }
     }
-    
-    public int getSpeedFromUser (String message){
-        String speed = JOptionPane.showInputDialog(message);
-        if (speed==null) return 0;
-        try {
-            Integer.parseInt(speed);
-            if (Integer.parseInt(speed)<0) return getSpeedFromUser(message);
-            return Integer.parseInt(speed);        
-        }
-        catch (NumberFormatException e){
-            JOptionPane.showMessageDialog(this,"Speed invalid","Speed invalid",JOptionPane.ERROR_MESSAGE);
-        }
-        return getSpeedFromUser(message);
-    }
+
     
     public boolean checkPoints(String speed){ // validità del test
         String res = null;
         boolean valid = false;
         try {
             String lines = null;
-            ProcessBuilder builder = new ProcessBuilder("python", "C:\\Users\\kikki\\PycharmProjects\\progetto\\validate_test.py", stringPointX.substring(0, stringPointX.length()-1), stringPointY.substring(0, stringPointY.length()-1));
+            ProcessBuilder builder = new ProcessBuilder("python", "C:\\Users\\kikki\\PycharmProjects\\progetto\\validate_test.py", test.getStringPointX().substring(0, test.getStringPointX().length()-1), test.getStringPointY().substring(0, test.getStringPointY().length()-1));
             Process process = builder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             res=reader.readLine();
@@ -175,7 +114,7 @@ public class RoadDrawer extends JPanel{
             if (res.equals("Test seems valid")){
                 JOptionPane.showMessageDialog(this, res);
                 if(speed!=null){
-                    writePointsOnFile(this.stringPointX.substring(0, this.stringPointX.length()-1), this.stringPointY.substring(0, stringPointY.length()-1), speed);
+                    writePointsOnFile(this.test.getStringPointX().substring(0, this.test.getStringPointX().length()-1), this.test.getStringPointY().substring(0, test.getStringPointY().length()-1), speed);
                 } //se il test è valido scrive i punti scelti sul file chosenPoint.txt
                 valid = true;
             }
@@ -211,17 +150,16 @@ public class RoadDrawer extends JPanel{
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
         g2.setColor(Color.gray);
-        System.out.println("PUNTI\n");
-        for (Point2D p : points){
-                System.out.println(p.getX()+", "+p.getY());
+        for (Point2D p : test.getPoints()){
                 g2.fillOval((int)p.getX(),(int)p.getY(),5,5);
             }
-        if (points.size()>3){
+        if (test.getPoints().size()>3){
             try {
-                interpolatePoints();
-                System.out.println("INTERPOLATED SIZE "+interpolated.size());
-                for (int i=1; i<interpolated.size(); i++){
-                    Line2D line = new Line2D.Double(interpolated.get(i-1),interpolated.get(i));
+                if (!interpolatedS){
+                    interpolatePoints();
+                }
+                for (int i=1; i<test.getInterpolated().size(); i++){
+                    Line2D line = new Line2D.Double(test.getInterpolated().get(i-1),test.getInterpolated().get(i));
                     g2.setColor(Color.gray);
                     g2.setStroke(new BasicStroke(10));
                     g2.draw(line);

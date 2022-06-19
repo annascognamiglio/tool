@@ -151,9 +151,9 @@ class AngleLengthGenerator:
         Y = np.asarray(str(lines[1]).split(','), dtype=float)
         speed = int(np.asarray(str(lines[2])))
         test_executor = BeamngExecutor(generation_budget=10000, execution_budget=10000, time_budget=10000,
-                                       result_folder="C:\\Users\\kikki\\PycharmProjects\\progetto\\results", map_size=500, beamng_home="C:\\Users\\kikki\\BeamNG",
+                                       result_folder="C:\\Users\\kikki\\PycharmProjects\\progetto\\results", map_size=1000, beamng_home="C:\\Users\\kikki\\BeamNG",
                                        beamng_user="C:\\Users\\kikki\\BeamNG_user",
-                                       road_visualizer=RoadTestVisualizer(map_size=500), max_speed_in_kmh=speed)
+                                       road_visualizer=RoadTestVisualizer(map_size=1000), max_speed_in_kmh=speed)
         final = np.column_stack((X, Y))
         print(final)
         if final is None:
