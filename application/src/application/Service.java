@@ -54,7 +54,7 @@ public class Service {
                 }
                 Test t = panel.getRoadDrawer().getTest();
                 try {
-                    t.executeTest(path);
+                    t.executeTest(path,panel);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -195,9 +195,13 @@ public class Service {
                 String stringPointX = panel.getRoadDrawer().getTest().getStringPointX();
                 String stringPointY = panel.getRoadDrawer().getTest().getStringPointY();                
                 Test t = new Test(name,simulator,speed,points,interpolated,stringPointX,stringPointY);
+                panel.getLoadingPanel().setVisible(true);
+                panel.getProgressBar().setIndeterminate(true);
+                panel.getRoadDrawer().repaint();
                 if (!t.checkValidity()){
                     return;
                 }
+                panel.getLoadingPanel().setVisible(false);
                 ((TestsTableModel)panel.getTestsTable().getModel()).getTestsGroup().add(t);
                 ((TestsTableModel)panel.getTestsTable().getModel()).fireTableDataChanged();
             }
@@ -235,7 +239,7 @@ public class Service {
                 new File(path).mkdirs();
                 for (Test t : testList){
                     try {
-                        t.executeTest(path);
+                        t.executeTest(path,panel);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
                     }

@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -210,16 +211,19 @@ public class Test {
         myWriter.close();
     }
     
-    public void executeTest(String path) throws InterruptedException{
+    public void executeTest(String path, ContainerRoadDrawer frame) throws InterruptedException{
         if (points.size()<=3){
             JOptionPane.showMessageDialog(null,"Insufficient number of points","Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
+        frame.getLoadingPanel().setVisible(true);
+        frame.getProgressBar().setIndeterminate(true);
         if (!this.valid){
             if(!checkValidity()){
             return;
             }
         }
+        frame.getLoadingPanel().setVisible(false);
         switch (this.simulator) {
             case "BeamNG":
                 executeTestBeamNG(path);

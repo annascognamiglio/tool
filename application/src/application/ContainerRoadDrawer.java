@@ -8,9 +8,12 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -41,6 +44,9 @@ public class ContainerRoadDrawer extends JFrame{
         reset = new JMenuItem();
         resultFolder = new JMenuItem();
         open = new JMenu();
+        loadingPanel = new javax.swing.JPanel();
+        loadingText = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
         
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         roadDrawer.setPreferredSize(new Dimension(500,500));
@@ -68,11 +74,47 @@ public class ContainerRoadDrawer extends JFrame{
         menu.add(resultFolder);
         getSavedFile();
         
+        loadingText.setText("Checking validity test");
+        loadingPanel.setVisible(false);
         
         testsTable.setModel(new TestsTableModel());
         scrollPaneTable.setViewportView(testsTable);
         
-                javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        javax.swing.GroupLayout loadingPanelLayout = new javax.swing.GroupLayout(loadingPanel);
+        loadingPanel.setLayout(loadingPanelLayout);
+        loadingPanelLayout.setHorizontalGroup(
+            loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loadingPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(loadingText)
+                .addGap(75, 75, 75)
+                .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        loadingPanelLayout.setVerticalGroup(
+            loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loadingPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(loadingText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout roadDrawerLayout = new javax.swing.GroupLayout(roadDrawer);
+        roadDrawer.setLayout(roadDrawerLayout);
+        roadDrawerLayout.setHorizontalGroup(
+            roadDrawerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(loadingPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        roadDrawerLayout.setVerticalGroup(
+            roadDrawerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(roadDrawerLayout.createSequentialGroup()
+                .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -130,6 +172,27 @@ public class ContainerRoadDrawer extends JFrame{
     private JScrollPane scrollPaneTable;
     private JTextField speedField;
     private JTable testsTable;
+    private JProgressBar progressBar;
+    private JPanel loadingPanel;
+    private JLabel loadingText;
+
+    public JProgressBar getProgressBar() {
+        return progressBar;
+    }
+
+    public void setProgressBar(JProgressBar progressBar) {
+        this.progressBar = progressBar;
+    }
+
+    public JPanel getLoadingPanel() {
+        return loadingPanel;
+    }
+
+    public void setLoadingPanel(JPanel loadingPanel) {
+        this.loadingPanel = loadingPanel;
+    }
+    
+    
     
     public JMenuItem getSaveItem(){
         return this.save;

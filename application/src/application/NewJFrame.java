@@ -32,6 +32,9 @@ public class NewJFrame extends javax.swing.JFrame {
         scrollPaneTable = new javax.swing.JScrollPane();
         testsTable = new javax.swing.JTable();
         roadDrawer = new javax.swing.JPanel();
+        loadingPanel = new javax.swing.JPanel();
+        loadingText = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         runButton = new javax.swing.JButton();
@@ -72,15 +75,45 @@ public class NewJFrame extends javax.swing.JFrame {
         ));
         scrollPaneTable.setViewportView(testsTable);
 
+        roadDrawer.setBackground(new java.awt.Color(0, 153, 153));
+        roadDrawer.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        loadingPanel.setBackground(new java.awt.Color(255, 153, 51));
+
+        loadingText.setText("Checking validity test");
+
+        javax.swing.GroupLayout loadingPanelLayout = new javax.swing.GroupLayout(loadingPanel);
+        loadingPanel.setLayout(loadingPanelLayout);
+        loadingPanelLayout.setHorizontalGroup(
+            loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loadingPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(loadingText)
+                .addGap(75, 75, 75)
+                .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        loadingPanelLayout.setVerticalGroup(
+            loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loadingPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(loadingText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout roadDrawerLayout = new javax.swing.GroupLayout(roadDrawer);
         roadDrawer.setLayout(roadDrawerLayout);
         roadDrawerLayout.setHorizontalGroup(
             roadDrawerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addComponent(loadingPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         roadDrawerLayout.setVerticalGroup(
             roadDrawerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(roadDrawerLayout.createSequentialGroup()
+                .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         addButton.setText("+");
@@ -243,10 +276,13 @@ public class NewJFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JComboBox<String> comboSimulator;
+    private javax.swing.JPanel loadingPanel;
+    private javax.swing.JLabel loadingText;
     private javax.swing.JMenu menu;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JButton okButton;
     private javax.swing.JMenu open;
+    private javax.swing.JProgressBar progressBar;
     private javax.swing.JButton removeButton;
     private javax.swing.JMenuItem reset;
     private javax.swing.JPanel roadDrawer;
